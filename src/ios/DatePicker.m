@@ -37,6 +37,8 @@
 
 - (void)show:(CDVInvokedUrlCommand*)command {
     NSMutableDictionary *options = [command argumentAtIndex:0];
+    //SNEO - Force the keyboard to hide before anything
+    [self.view endEditing:YES];
     if (isIPhone) {
         [self showForPhone: options];
     } else {
