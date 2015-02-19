@@ -2,7 +2,7 @@
 
 <plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
            id="com.sneo.cordova.plugin.datepicker"
-      version="1.0.0">
+      version="1.0.1">
 
     <name>Datepicker</name>
     <description>Cordova Datepicker Plugin for iOS and Android</description>
