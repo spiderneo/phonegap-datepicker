@@ -4,7 +4,7 @@
  * It can now accept `min` and `max` dates for DatePicker.
  */
 
-package com.sharinglabs.cordova.plugin.datepicker;
+package com.sneo.cordova.plugin.datepicker;
 
 import java.util.Calendar;
 import java.util.Date;
