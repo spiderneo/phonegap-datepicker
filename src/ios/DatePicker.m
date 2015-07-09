@@ -160,18 +160,17 @@
 - (void)jsDateSelected {
     NSTimeInterval seconds = [self.datePicker.date timeIntervalSince1970];
     NSString* jsCallback = [NSString stringWithFormat:@"datePicker._dateSelected(\"%f\");", seconds];
-    //NSLog(jsCallback);
-    [super writeJavascript:jsCallback];
+    [self.commandDelegate evalJs:jsCallback];
 }
 
 - (void)jsDateClear {
     NSString* jsCallback = [NSString stringWithFormat:@"datePicker._dateSelected(\"clear\");"];
-    [super writeJavascript:jsCallback];
+    [self.commandDelegate evalJs:jsCallback];
 }
 
 - (void)jsDateCancel {
     NSString* jsCallback = [NSString stringWithFormat:@"datePicker._dateSelected(\"cancel\");"];
-    [super writeJavascript:jsCallback];
+    [self.commandDelegate evalJs:jsCallback];
 }
 
 
