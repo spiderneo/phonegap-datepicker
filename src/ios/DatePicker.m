@@ -1,11 +1,15 @@
 /*
  
- Phonegap DatePicker Plugin for using Cordova 3 and iOS 7
+ Phonegap DatePicker Plugin
  https://github.com/sectore/phonegap3-ios-datepicker-plugin
  
  Based on a previous plugin version by Greg Allen and Sam de Freyssinet.
- 
  Rewrite by Jens Krause (www.websector.de)
+ Bugfixes for iPad 8.0 by SNEO
+ Bugfixes and changes by koalasafe.com
+    - fixed deprecation warnings
+    - no more iPad specific functionality, popover caused callback on every spin, no done/cancel button, no obvious way to calc the x/y relative to the input control
+    - Using iPhone paradigm on ipad.
  
  MIT Licensed
  
@@ -39,11 +43,7 @@
     NSMutableDictionary *options = [command argumentAtIndex:0];
     //SNEO - Force the keyboard to hide before anything
     [self.webView endEditing:YES];
-    if (isIPhone) {
-        [self showForPhone: options];
-    } else {
-        [self showForPad: options];
-    }
+    [self showForPhone: options];
 }
 
 - (BOOL)showForPhone:(NSMutableDictionary *)options {
@@ -55,10 +55,6 @@
     [self updateCancelButton:options];
     
     BOOL isClearButton = ([[options objectForKey:@"clearButton"] intValue] == 0) ? NO : YES;
-    //BOOL isClearButton = NO;
-    //if ([[options objectForKey:@"clearButton"] intValue] == 1) {
-     //   isClearButton = YES;
-    //}
     if (isClearButton) {
         [self updateClearButton:options];
     } else {
@@ -67,12 +63,12 @@
     
     [self updateDoneButton:options];
     
-    UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
+    UIInterfaceOrientation uiInterface = [[UIApplication sharedApplication] statusBarOrientation];
     
     CGFloat width;
     CGFloat height;
     
-    if(UIInterfaceOrientationIsLandscape(deviceOrientation)){
+    if(UIInterfaceOrientationIsLandscape(uiInterface)){
         width = self.webView.superview.frame.size.height;
         height= self.webView.superview.frame.size.width;
     } else {
@@ -107,31 +103,22 @@
     return true;
 }
 
-- (BOOL)showForPad:(NSMutableDictionary *)options {
-    self.datePickerPopover = [self createPopover:options];
-    return true;
-}
-
 - (void)hide {
-    if (isIPhone) {
         CGRect frame = CGRectOffset(self.datePickerComponentsContainer.frame,
                                     0,
                                     self.datePickerComponentsContainer.frame.size.height);
         
         [UIView animateWithDuration:ANIMATION_DURATION
-                              delay:0
+                            delay:0
                             options:UIViewAnimationOptionCurveEaseOut
-                         animations:^{
+                            animations:^{
                              self.datePickerComponentsContainer.frame = frame;
                              self.datePickerContainer.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0];
                              
-                         } completion:^(BOOL finished) {
+                            } completion:^(BOOL finished) {
                              [self.datePickerContainer removeFromSuperview];
-                         }];
-        
-    } else {
-        [self.datePickerPopover dismissPopoverAnimated:YES];
-    }
+                            }];
+    
 }
 
 #pragma mark - Actions
@@ -160,71 +147,24 @@
 - (void)jsDateSelected {
     NSTimeInterval seconds = [self.datePicker.date timeIntervalSince1970];
     NSString* jsCallback = [NSString stringWithFormat:@"datePicker._dateSelected(\"%f\");", seconds];
-    //NSLog(jsCallback);
-    [super writeJavascript:jsCallback];
+    [self.commandDelegate evalJs:jsCallback];
 }
 
 - (void)jsDateClear {
     NSString* jsCallback = [NSString stringWithFormat:@"datePicker._dateSelected(\"clear\");"];
-    [super writeJavascript:jsCallback];
+    [self.commandDelegate evalJs:jsCallback];
 }
 
 - (void)jsDateCancel {
     NSString* jsCallback = [NSString stringWithFormat:@"datePicker._dateSelected(\"cancel\");"];
-    [super writeJavascript:jsCallback];
+    [self.commandDelegate evalJs:jsCallback];
 }
 
 
 #pragma mark - UIPopoverControllerDelegate methods
 
-- (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController {
-    
-}
 
 #pragma mark - Factory methods
-
-- (UIPopoverController *)createPopover:(NSMutableDictionary *)options {
-    
-    CGFloat pickerViewWidth = 320.0f;
-    CGFloat pickerViewHeight = 216.0f;
-    UIView *datePickerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, pickerViewWidth, pickerViewHeight)];
-    
-    CGRect frame = CGRectMake(0, 0, 0, 0);
-    
-    
-    /******** 
-    SNEO Fix - https://github.com/VitaliiBlagodir/cordova-plugin-datepicker/commit/26cb522c34babe6d65e3807fb52d366f8dce35f6
-    cause IOS8 Ipad crash
-    ******** 
-    
-    if(!self.datePicker){
-        self.datePicker = [self createDatePicker:options frame:frame];
-        [self.datePicker addTarget:self action:@selector(dateChangedAction:) forControlEvents:UIControlEventValueChanged];
-    }
-    *********/
-    // in iOS8, UIDatePicker couldn't be shared in multi UIViews, it will cause crash. so   create new UIDatePicker instance every time
-    if (! self.datePicker || [[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0){
-        self.datePicker = [self createDatePicker:options frame:frame];
-        [self.datePicker addTarget:self action:@selector(dateChangedAction:) forControlEvents:UIControlEventValueChanged];
-    }
-    
-    [self updateDatePicker:options];
-    [datePickerView addSubview:self.datePicker];
-    
-    UIViewController *datePickerViewController = [[UIViewController alloc]init];
-    datePickerViewController.view = datePickerView;
-    
-    UIPopoverController *popover = [[UIPopoverController alloc] initWithContentViewController:datePickerViewController];
-    popover.delegate = self;
-    [popover setPopoverContentSize:CGSizeMake(pickerViewWidth, pickerViewHeight) animated:NO];
-    
-    CGFloat x = [[options objectForKey:@"x"] intValue];
-    CGFloat y = [[options objectForKey:@"y"] intValue];
-    CGRect anchor = CGRectMake(x, y, 1, 1);
-    [popover presentPopoverFromRect:anchor inView:self.webView.superview  permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
-    
-    return popover;
-}
 
 - (UIDatePicker *)createDatePicker:(NSMutableDictionary *)options frame:(CGRect)frame {
     UIDatePicker *datePicker = [[UIDatePicker alloc] initWithFrame:frame];
@@ -305,7 +245,6 @@
     
     NSString *tintColorHex = [options objectForKey:@"doneButtonColor"];
     [self.doneButton setTintColor: [self colorFromHexString: tintColorHex]];
-    
 }
 
 
