@@ -67,12 +67,12 @@
     
     [self updateDoneButton:options];
     
-    UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
+    UIInterfaceOrientation uiInterface = [[UIApplication sharedApplication] statusBarOrientation];
     
     CGFloat width;
     CGFloat height;
     
-    if(UIInterfaceOrientationIsLandscape(deviceOrientation)){
+    if(UIInterfaceOrientationIsLandscape(uiInterface)){
         width = self.webView.superview.frame.size.height;
         height= self.webView.superview.frame.size.width;
     } else {
