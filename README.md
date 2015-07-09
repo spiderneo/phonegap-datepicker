@@ -1,6 +1,6 @@
 # DatePicker Plugin for Cordova/PhoneGap 3.0 (iOS and Android)
 
-# KoalaSafe version
+### KoalaSafe version
 
 - Removed iPad specific style. Pops up at bottom as per iPhone regardless of device
 
