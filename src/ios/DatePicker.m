@@ -9,6 +9,8 @@
  
  MIT Licensed
  
+ Bugfixes 1.0.3
+  - resolved writeJavascript deprecation in favour of evalJs
  */
 
 #import "DatePicker.h"
@@ -161,17 +163,17 @@
     NSTimeInterval seconds = [self.datePicker.date timeIntervalSince1970];
     NSString* jsCallback = [NSString stringWithFormat:@"datePicker._dateSelected(\"%f\");", seconds];
     //NSLog(jsCallback);
-    [super writeJavascript:jsCallback];
+    [self.commandDelegate evalJs:jsCallback];
 }
 
 - (void)jsDateClear {
     NSString* jsCallback = [NSString stringWithFormat:@"datePicker._dateSelected(\"clear\");"];
-    [super writeJavascript:jsCallback];
+    [self.commandDelegate evalJs:jsCallback];
 }
 
 - (void)jsDateCancel {
     NSString* jsCallback = [NSString stringWithFormat:@"datePicker._dateSelected(\"cancel\");"];
-    [super writeJavascript:jsCallback];
+    [self.commandDelegate evalJs:jsCallback];
 }
 
 
